@@ -7,6 +7,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	const createTodoElements = () => {
 		list.innerHTML = '';
+		if (!todos.length) {
+			const empty = document.createElement('h3');
+			empty.textContent = 'Todo-List is empty';
+			list.prepend(empty);
+		}
 		todos.forEach(todoItem => {
 			const todo = document.createElement('li');
 			todo.classList.add('todo');
@@ -48,23 +53,28 @@ window.addEventListener('DOMContentLoaded', () => {
 	const addTodo = () => {
 		addBtn.addEventListener('click', e => {
 			e.preventDefault();
+			const err = document.createElement('div');
 			if (!input.value.trim()) {
+				err.style.color = 'crimson';
+				err.textContent = 'Error, enter some todo';
+				list.prepend(err);
 				return;
+			} else {
+				err.remove();
+				const todo = {
+					todo: input.value,
+					completed: false,
+					userId: 100,
+				};
+				input.value = '';
+				postData(todo);
 			}
-
-			const todo = {
-				todo: input.value,
-				completed: false,
-				userId: 100,
-			};
-			input.value = '';
-			postData(todo);
 		});
 	};
 
 	const getData = async () => {
 		try {
-			await fetch(`${path}?limit=10`)
+			await fetch(`${path}?limit=5`)
 				.then(res => res.json())
 				.then(data => (todos = data.todos));
 			createTodoElements();
@@ -82,8 +92,9 @@ window.addEventListener('DOMContentLoaded', () => {
 			})
 				.then(resp => resp.json())
 				.then(data => todos.push(data)); //For every new post dummyjson generate the same id: 151 - doesn't matter you created
-			createTodoElements(); // just 1 todo or 10 - all of them will have the same id
+			createTodoElements(); // just 1 todo or 10 - all of them will have the same id, and therefore when we create several todos
 		} catch (e) {
+			// will deleted all of created todos because all of them have an id=151
 			console.error(e);
 		}
 	};
